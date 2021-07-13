@@ -28,4 +28,19 @@ public class ReflectionUtils {
         return Bukkit.getServer().getClass().getPackageName().split("\\.")[3];
     }
 
+    public static boolean isAnOldVersion(){
+        return getMinorVersion() < 13;
+    }
+
+    public static int getMinorVersion(){
+        final String version = getVersion();
+        final String subVer = version.split("_")[1];
+        try {
+            return Integer.parseInt(subVer);
+        } catch (NumberFormatException e){
+            e.printStackTrace();
+        }
+        return 16;
+    }
+
 }

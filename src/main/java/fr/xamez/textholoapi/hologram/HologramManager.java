@@ -32,10 +32,8 @@ public class HologramManager {
         nextLoc.subtract(0, hologram.getSpaceBetween()*lineNumber, 0);
         if (lineNumber < hologram.getArmorStands().size()) {
             final Object entity = hologram.getArmorStands().get(lineNumber);
-            final Class<?> nmsChatBaseComponentClazz = ReflectionUtils.getNmsClass("IChatBaseComponent");
             try {
-                final Object componentText = ReflectionUtils.getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', text));
-                entity.getClass().getMethod("setCustomName", nmsChatBaseComponentClazz).invoke(entity, componentText);
+                setCustomName(entity, text);
                 updateEntityMetaData(p, entity);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -53,16 +51,18 @@ public class HologramManager {
         try {
             final Object nmsWorldServer = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
             final Class<?> nmsWorldClazz = ReflectionUtils.getNmsClass("World");
-            final Class<?> nmsChatBaseComponentClazz = ReflectionUtils.getNmsClass("IChatBaseComponent");
             final Object entityArmorStand = ReflectionUtils.getNmsClass("EntityArmorStand")
                     .getConstructor(nmsWorldClazz, double.class, double.class, double.class)
                     .newInstance(nmsWorldServer, location.getX(), location.getY(), location.getZ());
-            final Object componentText = ReflectionUtils.getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', text));
-            entityArmorStand.getClass().getMethod("setCustomName", nmsChatBaseComponentClazz).invoke(entityArmorStand, componentText);
+            setCustomName(entityArmorStand, text);
             entityArmorStand.getClass().getMethod("setInvisible", boolean.class).invoke(entityArmorStand, true);
-            entityArmorStand.getClass().getMethod("setNoGravity", boolean.class).invoke(entityArmorStand, true);
+            if (ReflectionUtils.getMinorVersion() < 9)
+                entityArmorStand.getClass().getMethod("setGravity", boolean.class).invoke(entityArmorStand, true);
+            else
+                entityArmorStand.getClass().getMethod("setNoGravity", boolean.class).invoke(entityArmorStand, true);
             entityArmorStand.getClass().getMethod("setCustomNameVisible", boolean.class).invoke(entityArmorStand, true);
-            entityArmorStand.getClass().getMethod("setMarker", boolean.class).invoke(entityArmorStand, true);
+            if (ReflectionUtils.getMinorVersion() > 8)
+                entityArmorStand.getClass().getMethod("setMarker", boolean.class).invoke(entityArmorStand, true);
             final Class<?> nmsEntityLivingClazz = ReflectionUtils.getNmsClass("EntityLiving");
             final Object packetPlayOutSpawnEntityLiving = ReflectionUtils.getNmsClass("PacketPlayOutSpawnEntityLiving")
                     .getConstructor(nmsEntityLivingClazz)
@@ -84,6 +84,20 @@ public class HologramManager {
                     .getConstructor(int.class, dataWatcherClazz, boolean.class)
                     .newInstance(id, dataWatcher, false);
             ReflectionUtils.sendPacket(p, packetPlayOutEntityMetadata);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void setCustomName(Object entity, String customName){
+        try {
+            if (ReflectionUtils.isAnOldVersion()){
+                entity.getClass().getMethod("setCustomName", String.class).invoke(entity, ChatColor.translateAlternateColorCodes('&', customName));
+            } else {
+                final Class<?> nmsChatBaseComponentClazz = ReflectionUtils.getNmsClass("IChatBaseComponent");
+                final Object componentText = ReflectionUtils.getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', customName));
+                entity.getClass().getMethod("setCustomName", nmsChatBaseComponentClazz).invoke(entity, componentText);
+            }
         } catch (Exception e){
             e.printStackTrace();
         }
