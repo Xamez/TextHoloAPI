@@ -18,8 +18,12 @@ public class HologramManager {
     public void deleteHologram(Player p, Hologram hologram){
         for (Object armorStand : hologram.getArmorStands()){
             try {
+                Object packetPlayOutEntityDestroy;
                 final int id = (int) armorStand.getClass().getMethod("getId").invoke(armorStand);
-                final Object packetPlayOutEntityDestroy = ReflectionUtils.getNmsClass("PacketPlayOutEntityDestroy").getConstructor(int[].class).newInstance(new int[]{id});
+                if (ReflectionUtils.getMajorVersion() < 1.17)
+                    packetPlayOutEntityDestroy = ReflectionUtils.getNmsClass("PacketPlayOutEntityDestroy").getConstructor(int[].class).newInstance(new int[]{id});
+                else
+                    packetPlayOutEntityDestroy = ReflectionUtils.getPacketClass("PacketPlayOutEntityDestroy").getConstructor(int.class).newInstance(id);
                 ReflectionUtils.sendPacket(p, packetPlayOutEntityDestroy);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -50,21 +54,37 @@ public class HologramManager {
     public void spawnArmorStand(Hologram hologram, Player p, String text, Location location){
         try {
             final Object nmsWorldServer = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
-            final Class<?> nmsWorldClazz = ReflectionUtils.getNmsClass("World");
-            final Object entityArmorStand = ReflectionUtils.getNmsClass("EntityArmorStand")
+            Class<?> nmsWorldClazz;
+            Class<?> entityArmorStandClazz;
+            if (ReflectionUtils.getMajorVersion() < 17) {
+                nmsWorldClazz = ReflectionUtils.getNmsClass("World");
+                entityArmorStandClazz = ReflectionUtils.getNmsClass("EntityArmorStand");
+            } else {
+                nmsWorldClazz = ReflectionUtils.getMinecraftClass("world.level", "World");
+                entityArmorStandClazz = ReflectionUtils.getMinecraftClass("world.entity.decoration", "EntityArmorStand");
+            }
+            Object entityArmorStand = entityArmorStandClazz
                     .getConstructor(nmsWorldClazz, double.class, double.class, double.class)
                     .newInstance(nmsWorldServer, location.getX(), location.getY(), location.getZ());
             setCustomName(entityArmorStand, text);
             entityArmorStand.getClass().getMethod("setInvisible", boolean.class).invoke(entityArmorStand, true);
-            if (ReflectionUtils.getMinorVersion() < 9)
+            if (ReflectionUtils.getMajorVersion() < 9)
                 entityArmorStand.getClass().getMethod("setGravity", boolean.class).invoke(entityArmorStand, true);
             else
                 entityArmorStand.getClass().getMethod("setNoGravity", boolean.class).invoke(entityArmorStand, true);
             entityArmorStand.getClass().getMethod("setCustomNameVisible", boolean.class).invoke(entityArmorStand, true);
-            if (ReflectionUtils.getMinorVersion() > 8)
+            if (ReflectionUtils.getMajorVersion() > 8)
                 entityArmorStand.getClass().getMethod("setMarker", boolean.class).invoke(entityArmorStand, true);
-            final Class<?> nmsEntityLivingClazz = ReflectionUtils.getNmsClass("EntityLiving");
-            final Object packetPlayOutSpawnEntityLiving = ReflectionUtils.getNmsClass("PacketPlayOutSpawnEntityLiving")
+            Class<?> nmsEntityLivingClazz;
+            Class<?> packetPlayOutSpawnEntityLivingClazz;
+            if (ReflectionUtils.getMajorVersion() < 1.17) {
+                nmsEntityLivingClazz = ReflectionUtils.getNmsClass("EntityLiving");
+                packetPlayOutSpawnEntityLivingClazz = ReflectionUtils.getNmsClass("PacketPlayOutSpawnEntityLiving");
+            } else {
+                nmsEntityLivingClazz = ReflectionUtils.getMinecraftClass("world.entity", "EntityLiving");
+                packetPlayOutSpawnEntityLivingClazz = ReflectionUtils.getPacketClass("PacketPlayOutSpawnEntityLiving");
+            }
+            final Object packetPlayOutSpawnEntityLiving = packetPlayOutSpawnEntityLivingClazz
                     .getConstructor(nmsEntityLivingClazz)
                     .newInstance(entityArmorStand);
             ReflectionUtils.sendPacket(p, packetPlayOutSpawnEntityLiving);
@@ -79,8 +99,16 @@ public class HologramManager {
         try {
             final int id = (int) entity.getClass().getMethod("getId").invoke(entity);
             final Object dataWatcher = entity.getClass().getMethod("getDataWatcher").invoke(entity);
-            final Class<?> dataWatcherClazz = ReflectionUtils.getNmsClass("DataWatcher");
-            final Object packetPlayOutEntityMetadata = ReflectionUtils.getNmsClass("PacketPlayOutEntityMetadata")
+            Class<?> dataWatcherClazz;
+            Class<?> packetPlayOutEntityMetadataClass;
+            if (ReflectionUtils.getMajorVersion() < 17) {
+                dataWatcherClazz = ReflectionUtils.getNmsClass("DataWatcher");
+                packetPlayOutEntityMetadataClass = ReflectionUtils.getNmsClass("PacketPlayOutEntityMetadata");
+            } else {
+                dataWatcherClazz = ReflectionUtils.getNetworkClass("syncher", "DataWatcher");
+                packetPlayOutEntityMetadataClass = ReflectionUtils.getPacketClass("PacketPlayOutEntityMetadata");
+            }
+            final Object packetPlayOutEntityMetadata = packetPlayOutEntityMetadataClass
                     .getConstructor(int.class, dataWatcherClazz, boolean.class)
                     .newInstance(id, dataWatcher, false);
             ReflectionUtils.sendPacket(p, packetPlayOutEntityMetadata);
@@ -91,13 +119,18 @@ public class HologramManager {
 
     private void setCustomName(Object entity, String customName){
         try {
+            Class<?> nmsChatBaseComponentClazz = null;
+            Object componentText = null;
             if (ReflectionUtils.isAnOldVersion()){
                 entity.getClass().getMethod("setCustomName", String.class).invoke(entity, ChatColor.translateAlternateColorCodes('&', customName));
+            } else if (ReflectionUtils.getMajorVersion() < 17) {
+                nmsChatBaseComponentClazz = ReflectionUtils.getNmsClass("IChatBaseComponent");
+                componentText = ReflectionUtils.getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', customName));
             } else {
-                final Class<?> nmsChatBaseComponentClazz = ReflectionUtils.getNmsClass("IChatBaseComponent");
-                final Object componentText = ReflectionUtils.getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', customName));
-                entity.getClass().getMethod("setCustomName", nmsChatBaseComponentClazz).invoke(entity, componentText);
+                nmsChatBaseComponentClazz = ReflectionUtils.getNetworkClass("chat","IChatBaseComponent");
+                componentText = ReflectionUtils.getNetworkClass("chat", "ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', customName));
             }
+            entity.getClass().getMethod("setCustomName", nmsChatBaseComponentClazz).invoke(entity, componentText);
         } catch (Exception e){
             e.printStackTrace();
         }
