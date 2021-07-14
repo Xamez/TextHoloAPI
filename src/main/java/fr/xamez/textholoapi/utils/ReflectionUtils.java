@@ -45,7 +45,7 @@ public class ReflectionUtils {
     }
 
     public static String getVersion(){
-        return Bukkit.getServer().getClass().getPackageName().split("\\.")[3];
+        return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
     }
 
     public static boolean isAnOldVersion(){
