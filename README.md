@@ -1,4 +1,4 @@
-# FastInv
+# TextHoloAPI
 [![JitPack](https://jitpack.io/v/Xamez/TextHoloAPI.svg)](https://jitpack.io/#Xamez/TextHoloAPI)
 
 Lightweight and easy-to-use text hologram API for Bukkit plugins.
