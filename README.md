@@ -32,7 +32,7 @@ shadowJar {
 
 ### Manual
 
-Just copy these 3 packages into your plugin.
+Just copy "hologram", "text" and "utils" packages into your plugin.
 
 ## Usage
 
