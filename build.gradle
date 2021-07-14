@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group 'fr.xamez.textholoapi'
+version '1.0'
+compileJava.getOptions().setEncoding("UTF-8")
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots' }
+}
+
+dependencies {
+    compileOnly group: 'org.spigotmc', name: 'spigot', version: '1.16.5-R0.1-SNAPSHOT'
+}
