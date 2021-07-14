@@ -62,7 +62,7 @@ public class Example {
 
     public void sendTextHolo(Player p){
         final ArrayList<String> lines = new ArrayList<>(Arrays.asList("My first line", "§cA second line with color", "&b&lThe last line"));
-        TextHoloAPI.displayText(p, p.getLocation().add(0, 2, 0), lines, 1, 40);
+        TextHoloAPI.displayText(p, p.getLocation().add(0, 2, 0), lines, 1, 40, 0.25, true);
     }
 
 }

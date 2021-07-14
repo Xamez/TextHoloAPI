@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'fr.xamez.textholoapi'
-version '1.0'
+version '1.2'
 compileJava.getOptions().setEncoding("UTF-8")
 
 repositories {
@@ -13,5 +13,5 @@ repositories {
 }
 
 dependencies {
-    compileOnly group: 'org.spigotmc', name: 'spigot', version: '1.16.5-R0.1-SNAPSHOT'
+    compileOnly group: 'org.spigotmc', name: 'spigot-api', version: '1.16.5-R0.1-SNAPSHOT'
 }

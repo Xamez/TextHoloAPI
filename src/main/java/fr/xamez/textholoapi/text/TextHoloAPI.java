@@ -27,9 +27,11 @@ public class TextHoloAPI {
      * @param text The text to display
      * @param duration Duration in tick between each letter
      * @param waitingTicks Waiting time in tick before the hologram disappears
+     * @param spaceBetween The space between each line of the hologram (by default it's 0.25)
+     * @param hasCursor Determine whether or not a flashing cursor appears at the end of the display
      */
-    public static void displayText(Player player, Location location, ArrayList<String> text, int duration, int waitingTicks){
-        new TextRunnable(player, location, text, waitingTicks).runTaskTimerAsynchronously(plugin, 0L, duration);
+    public static void displayText(Player player, Location location, ArrayList<String> text, int duration, int waitingTicks, double spaceBetween, boolean hasCursor){
+        new TextRunnable(player, location, text, waitingTicks, spaceBetween, hasCursor).runTaskTimerAsynchronously(plugin, 0L, duration);
     }
 
     public static HologramManager getHologramManager() {

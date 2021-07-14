@@ -7,7 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 
 public class TextRunnable extends BukkitRunnable {
 
@@ -20,14 +20,16 @@ public class TextRunnable extends BukkitRunnable {
     private int cursor = 0;
     private boolean wait = false;
     private final int waitingTicks;
+    private final boolean hasCursor;
 
-    public TextRunnable(Player p, Location location, ArrayList<String> dialogue, int waitingTicks){
+    public TextRunnable(Player p, Location location, ArrayList<String> dialogue, int waitingTicks, double spaceBetween, boolean hasCursor){
         this.p = p;
         this.dialogue = dialogue;
         this.lineSize = dialogue.size()-1;
         this.lastLine = dialogue.get(lineSize);
-        this.hologram = new Hologram(p, location);
+        this.hologram = new Hologram(p, location, spaceBetween, new ArrayList<>(Collections.singletonList(" ")));
         this.waitingTicks = waitingTicks;
+        this.hasCursor = hasCursor;
         hologram.create();
     }
 
@@ -51,9 +53,11 @@ public class TextRunnable extends BukkitRunnable {
                 this.cancel();
             }
             cursor++;
-            final String line = hologram.getLines().get(lineSize);
-            if (cursor % 5 == 0)
-                hologram.editLine(lineSize, this.lastLine.equals(line) ? line + "§f|" : lastLine);
+            if (hasCursor) {
+                final String line = hologram.getLines().get(lineSize);
+                if (cursor % 5 == 0)
+                    hologram.editLine(lineSize, this.lastLine.equals(line) ? line + "§f|" : lastLine);
+            }
         }
     }
 
