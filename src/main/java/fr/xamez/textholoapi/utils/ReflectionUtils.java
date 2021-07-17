@@ -9,11 +9,13 @@ public class ReflectionUtils {
         try {
             Object playerConnection;
             final Object nmsPlayer = p.getClass().getMethod("getHandle").invoke(p);
-            if (getMajorVersion() < 17)
+            if (getMajorVersion() < 17) {
                 playerConnection = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
-            else
+                playerConnection.getClass().getMethod("sendPacket", getNmsClass("Packet")).invoke(playerConnection, packet);
+            } else {
                 playerConnection = nmsPlayer.getClass().getField("b").get(nmsPlayer);
-            playerConnection.getClass().getMethod("sendPacket", getNetworkClass("protocol", "Packet")).invoke(playerConnection, packet);
+                playerConnection.getClass().getMethod("sendPacket", getNetworkClass("protocol", "Packet")).invoke(playerConnection, packet);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
