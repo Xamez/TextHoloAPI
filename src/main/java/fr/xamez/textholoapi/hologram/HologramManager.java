@@ -20,7 +20,7 @@ public class HologramManager {
             try {
                 Object packetPlayOutEntityDestroy;
                 final int id = (int) armorStand.getClass().getMethod("getId").invoke(armorStand);
-                if (ReflectionUtils.getMajorVersion() < 1.17)
+                if (ReflectionUtils.getMajorVersion() < 17)
                     packetPlayOutEntityDestroy = ReflectionUtils.getNmsClass("PacketPlayOutEntityDestroy").getConstructor(int[].class).newInstance(new int[]{id});
                 else
                     packetPlayOutEntityDestroy = ReflectionUtils.getPacketClass("PacketPlayOutEntityDestroy").getConstructor(int.class).newInstance(id);
